@@ -158,8 +158,8 @@ function ProductCard({
 
     // 용어: 링크 발급은 반드시 tacaItemId (옵션 단위)
     const tacaItemId = product.tacaItemId;
-    if (!tacaItemId) {
-      setLinkError("상품 옵션 ID(tacaItemId)가 없습니다.");
+    if (!tacaItemId || tacaItemId < 0) {
+      setLinkError("상품을 준비 중이에요. 잠시 후 다시 확인해 주세요.");
       return;
     }
 
@@ -471,8 +471,6 @@ export default function HomeClient() {
 
   const visibleBestItems = bestItems.slice(0, visibleCount);
   const hasMore = visibleCount < bestItems.length;
-
-  const hideDaily = !dailyLoading && !dailyError && dailyItems.length === 0;
   const dailyDeadline = resolveDailyDealDeadline(dailyItems);
 
   return (
@@ -493,9 +491,6 @@ export default function HomeClient() {
       <div className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col px-4 pb-10 pt-5">
         {/* 자체 뒤로가기 버튼 없음 — 토스 내비게이션 바만 사용 */}
         <header className="mb-5 animate-[fadeUp_0.5s_ease-out]">
-          <p className="mb-1 text-xs font-semibold tracking-wide text-baby-cta">
-            TOSS BABY PICKS
-          </p>
           <h1 className="font-display text-[1.35rem] font-extrabold leading-snug tracking-tight text-baby-ink sm:text-2xl">
             아기용품 인기상품&특가할인
           </h1>
@@ -504,10 +499,7 @@ export default function HomeClient() {
           </p>
         </header>
 
-        <section
-          className="mb-8 animate-[fadeUp_0.6s_ease-out]"
-          style={{ display: hideDaily ? "none" : undefined }}
-        >
+        <section className="mb-8 animate-[fadeUp_0.6s_ease-out]">
           <div className="mb-3">
             <div>
               <div className="mb-1 flex items-center gap-1.5">
@@ -529,8 +521,14 @@ export default function HomeClient() {
             <p className="baby-card px-4 py-6 text-center text-sm text-baby-mute">
               {dailyError}
             </p>
+          ) : dailyLoading ? (
+            <DailyDealCarousel products={[]} loading />
+          ) : dailyItems.length === 0 ? (
+            <p className="baby-card px-4 py-6 text-center text-sm text-baby-mute">
+              현재  Cond 수 있는 아기용품 하루특가가 없어요.
+            </p>
           ) : (
-            <DailyDealCarousel products={dailyItems} loading={dailyLoading} />
+            <DailyDealCarousel products={dailyItems} loading={false} />
           )}
         </section>
 
@@ -550,22 +548,28 @@ export default function HomeClient() {
             <p className="baby-card px-4 py-10 text-center text-sm text-baby-mute">
               {bestError}
             </p>
+          ) : bestLoading ? (
+            <div className="grid grid-cols-2 gap-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <SkeletonCard key={index} />
+              ))}
+            </div>
+          ) : bestItems.length === 0 ? (
+            <p className="baby-card px-4 py-10 text-center text-sm text-baby-mute">
+              현재  Cond 수 있는 아기용품 인기 상품이 없어요.
+            </p>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-3">
-                {bestLoading
-                  ? Array.from({ length: 6 }).map((_, index) => (
-                      <SkeletonCard key={index} />
-                    ))
-                  : visibleBestItems.map((product, index) => (
-                      <ProductCard
-                        key={`best-${product.tacaItemId || index}`}
-                        product={product}
-                      />
-                    ))}
+                {visibleBestItems.map((product, index) => (
+                  <ProductCard
+                    key={`best-${product.tacaItemId || index}`}
+                    product={product}
+                  />
+                ))}
               </div>
 
-              {!bestLoading && hasMore && (
+              {hasMore && (
                 <button
                   type="button"
                   onClick={() =>

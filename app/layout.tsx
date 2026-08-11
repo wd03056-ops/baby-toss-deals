@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "아기용품 인기상품&특가할인",
+  title: "아이특가 - 오늘의 추천 유아용품",
   description:
     "토스쇼핑 쉐어링크 기반 아기용품 베스트 TOP 20과 하루특가 추천 앱",
 };
@@ -11,13 +11,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false,
-  themeColor: "#FDFBF7",
-  colorScheme: "light",
+  themeColor: "#FFF0F5",
 };
-
-/** 앱인토스: SSR 금지 — 레이아웃도 정적 생성 */
-export const dynamic = "force-static";
 
 export default function RootLayout({
   children,
@@ -25,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="h-full light" style={{ colorScheme: "light" }}>
+    <html lang="ko" className="h-full">
       <head>
         <meta charSet="utf-8" />
         {/* 구글 폰트 직접 로드 (한글: Noto Sans KR, 영문: Nunito, Fredoka) */}
@@ -36,10 +31,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body
-        style={{ fontFamily: "'Noto Sans KR', 'Nunito', sans-serif" }}
-        className="min-h-full bg-[#FDFBF7] text-[#332E2B] antialiased"
-      >
+      <body style={{ fontFamily: "'Noto Sans KR', 'Nunito', sans-serif" }} className="min-h-full antialiased">
         {children}
       </body>
     </html>

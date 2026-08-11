@@ -1,61 +1,60 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createShareLink, toTossErrorResponse } from "@/lib/toss-api";
+import { createShareLink, TossApiError } from "@/lib/toss-api";
 
 export const dynamic = "force-dynamic";
 
 /**
  * POST /api/toss/link
- * body: { tacaItemId: number }
+ * body: { productId: number } 또는 { tacaItemId: number }
  *
- * 용어 문서: 링크 발급은 tacaItemId 사용 (tacaId 비권장)
- * 이동/게시는 shortUrl 또는 originUrl만 사용 (productUrl은 수익 미집계)
+ * 토스 Open API POST /openapi/links 로 쉐어링크를 실시간 발급합니다.
  */
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as {
-      tacaItemId?: number | string;
-      /** @deprecated 호환용 — 내부적으로 tacaItemId로 취급 */
       productId?: number | string;
+      tacaItemId?: number | string;
     };
 
-    // tacaItemId 우선 (productId는 과거 호환, tacaId로 오인하지 않도록 동일 옵션 ID만 허용)
-    const rawId = body.tacaItemId ?? body.productId;
-    const tacaItemId = Number(rawId);
+    const rawId = body.productId ?? body.tacaItemId;
+    const productId = Number(rawId);
 
-    if (!rawId || Number.isNaN(tacaItemId) || tacaItemId <= 0) {
+    if (!rawId || Number.isNaN(productId) || productId <= 0) {
       return NextResponse.json(
         {
-          resultType: "FAIL",
-          error: {
-            errorCode: "INVALID_ARGUMENT",
-            reason:
-              "유효한 tacaItemId가 필요합니다. (상품 목록 API의 옵션 식별자)",
-          },
+          success: false,
+          error: "유효한 productId(또는 tacaItemId)가 필요합니다.",
         },
         { status: 400 },
       );
     }
 
-    const link = await createShareLink(tacaItemId);
+    const link = await createShareLink(productId);
 
     return NextResponse.json({
-      resultType: "SUCCESS",
-      success: {
-        tacaItemId: link.tacaItemId,
-        publisherId: link.publisherId,
-        shortUrl: link.shortUrl,
-        originUrl: link.originUrl,
-        shareUrl: link.shareUrl,
-      },
-      // 프론트 호환 필드
-      tacaItemId: link.tacaItemId,
+      success: true,
+      productId: link.tacaItemId,
       shareUrl: link.shareUrl,
       shortUrl: link.shortUrl,
       originUrl: link.originUrl,
     });
   } catch (error) {
     console.error("[/api/toss/link]", error);
-    const { status, body } = toTossErrorResponse(error);
-    return NextResponse.json(body, { status });
+
+    if (error instanceof TossApiError) {
+      return NextResponse.json(error.body, { status: error.status });
+    }
+
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json(
+      { success: false, error: "쉐어링크 발급 실패" },
+      { status: 500 },
+    );
   }
 }

@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@apps-in-toss/web-framework": "^3.0.3",
     "next": "16.3.0",
     "react": "19.2.8",
     "react-dom": "19.2.8"

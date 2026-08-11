@@ -1,112 +1,36 @@
 @import "tailwindcss";
-@config "../tailwind.config.ts";
 
-/**
- * Warm & Neutral (감성 베이지) — baby 팔레트
- */
 :root {
-  color-scheme: light only;
-
-  --baby-bg: #fdfbf7;
-  --baby-card: #ffffff;
-  --baby-border: #e8e2d9;
-  --baby-butter: #f4e0a5;
-  --baby-cta: #d99b82;
-  --baby-ink: #332e2b;
-  --baby-mute: #7a726a;
-
-  /* 하위 호환 별칭 */
-  --background: var(--baby-bg);
-  --foreground: var(--baby-ink);
-  --surface: var(--baby-card);
-  --muted: var(--baby-mute);
-  --ring: var(--baby-border);
-  --accent: var(--baby-butter);
+  --background: #fff7fa;
+  --foreground: #334155;
+  --mint: #b8f0e0;
+  --peach: #ffd6c9;
 }
 
 @theme inline {
-  --color-baby-bg: var(--baby-bg);
-  --color-baby-card: var(--baby-card);
-  --color-baby-border: var(--baby-border);
-  --color-baby-butter: var(--baby-butter);
-  --color-baby-cta: var(--baby-cta);
-  --color-baby-ink: var(--baby-ink);
-  --color-baby-mute: var(--baby-mute);
-
-  --color-background: var(--baby-bg);
-  --color-foreground: var(--baby-ink);
-  --color-surface: var(--baby-card);
-  --color-muted: var(--baby-mute);
-  --color-ring: var(--baby-border);
-  --color-accent: var(--baby-butter);
-
-  --shadow-baby-sm: 0 1px 2px rgba(51, 46, 43, 0.04),
-    0 4px 12px rgba(51, 46, 43, 0.06);
-  --shadow-baby: 0 2px 4px rgba(51, 46, 43, 0.04),
-    0 8px 20px rgba(51, 46, 43, 0.08);
-  --shadow-baby-md: 0 4px 8px rgba(51, 46, 43, 0.05),
-    0 12px 28px rgba(51, 46, 43, 0.1);
-
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --font-sans: var(--font-nunito), "Apple SD Gothic Neo", "Malgun Gothic",
     sans-serif;
   --font-display: var(--font-fredoka), var(--font-nunito), sans-serif;
 }
 
-/* 제스처 확대·축소 비활성화 */
-html {
-  touch-action: manipulation;
-  -ms-touch-action: manipulation;
-}
-
 body {
-  background: #fdfbf7;
-  color: #332e2b;
+  background: var(--background);
+  color: var(--foreground);
   font-family: var(--font-sans);
-  touch-action: manipulation;
-  overscroll-behavior: none;
-}
-
-img,
-video {
-  max-width: 100%;
-  -webkit-user-drag: none;
-  user-select: none;
 }
 
 .font-display {
   font-family: var(--font-display);
 }
 
-.bg-warm-atmosphere {
-  background:
-    radial-gradient(
-      ellipse at top,
-      rgba(244, 224, 165, 0.35),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse at 80% 20%,
-      rgba(217, 155, 130, 0.18),
-      transparent 45%
-    ),
-    linear-gradient(180deg, #faf6ef 0%, #fdfbf7 70%);
+.bg-mint-blob {
+  background: var(--mint);
 }
 
-/* 상품 카드 · 하루특가 — 은은한 입체 그림자 */
-.baby-card {
-  background: var(--baby-card);
-  border: 1px solid var(--baby-border);
-  border-radius: 1rem; /* rounded-2xl */
-  box-shadow: var(--shadow-baby-sm);
-  transition:
-    box-shadow 0.25s ease,
-    transform 0.25s ease,
-    border-color 0.25s ease;
-}
-
-.baby-card:hover {
-  box-shadow: var(--shadow-baby);
-  border-color: color-mix(in srgb, var(--baby-border) 70%, var(--baby-butter));
+.bg-peach-blob {
+  background: var(--peach);
 }
 
 .scrollbar-hide {
@@ -130,7 +54,7 @@ video {
   touch-action: pan-x;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
 }
 
 .daily-carousel::-webkit-scrollbar {
