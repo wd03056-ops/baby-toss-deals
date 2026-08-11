@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "아이특가 - 오늘의 추천 유아용품",
+  title: "아기용품 인기상품&특가할인",
   description:
     "토스쇼핑 쉐어링크 기반 아기용품 베스트 TOP 20과 하루특가 추천 앱",
 };

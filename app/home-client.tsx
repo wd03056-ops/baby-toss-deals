@@ -43,6 +43,60 @@ function formatPrice(price: number) {
   return new Intl.NumberFormat("ko-KR").format(price);
 }
 
+/** 남은 시간을 HH:MM:SS 로 표시 */
+function formatRemaining(ms: number): string {
+  if (ms <= 0) return "00:00:00";
+  const totalSec = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSec / 3600);
+  const minutes = Math.floor((totalSec % 3600) / 60);
+  const seconds = totalSec % 60;
+  return [hours, minutes, seconds]
+    .map((n) => String(n).padStart(2, "0"))
+    .join(":");
+}
+
+/** 하루특가 상품 중 가장 가까운 endAt, 없으면 오늘 자정 */
+function resolveDailyDealDeadline(products: Product[]): number {
+  const now = Date.now();
+  let soonest: number | null = null;
+
+  for (const product of products) {
+    if (!product.endAt) continue;
+    const end = Date.parse(product.endAt);
+    if (Number.isNaN(end) || end <= now) continue;
+    if (soonest === null || end < soonest) soonest = end;
+  }
+
+  if (soonest !== null) return soonest;
+
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
+  return endOfDay.getTime();
+}
+
+function DealCountdown({ deadline }: { deadline: number }) {
+  const [remaining, setRemaining] = useState(() =>
+    Math.max(0, deadline - Date.now()),
+  );
+
+  useEffect(() => {
+    setRemaining(Math.max(0, deadline - Date.now()));
+    const id = window.setInterval(() => {
+      setRemaining(Math.max(0, deadline - Date.now()));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [deadline]);
+
+  return (
+    <span
+      className="inline-flex items-center rounded-md bg-baby-ink px-2 py-0.5 font-mono text-[10px] font-bold tracking-wider text-baby-butter shadow-baby-sm tabular-nums"
+      aria-label={`특가 종료까지 ${formatRemaining(remaining)} 남음`}
+    >
+      {formatRemaining(remaining)}
+    </span>
+  );
+}
+
 /** API 에러 본문에서 메시지를 안전하게 추출합니다. (null.error 접근 방지) */
 function getApiErrorMessage(data: unknown, fallback: string): string {
   if (!data || typeof data !== "object") {
@@ -419,6 +473,7 @@ export default function HomeClient() {
   const hasMore = visibleCount < bestItems.length;
 
   const hideDaily = !dailyLoading && !dailyError && dailyItems.length === 0;
+  const dailyDeadline = resolveDailyDealDeadline(dailyItems);
 
   return (
     <div className="relative min-h-dvh overflow-x-hidden bg-baby-bg text-baby-ink">
@@ -442,7 +497,7 @@ export default function HomeClient() {
             TOSS BABY PICKS
           </p>
           <h1 className="font-display text-[1.35rem] font-extrabold leading-snug tracking-tight text-baby-ink sm:text-2xl">
-            아이특가 - 오늘의 추천 유아용품
+            아기용품 인기상품&특가할인
           </h1>
           <p className="mt-1.5 text-sm leading-relaxed text-baby-mute">
             토스쇼핑에서 엄선한 아기용품 베스트와 하루특가를 모았어요.
@@ -455,8 +510,11 @@ export default function HomeClient() {
         >
           <div className="mb-3">
             <div>
-              <div className="mb-1 inline-flex items-center rounded-md bg-baby-butter px-2 py-0.5 text-[10px] font-bold tracking-wide text-baby-ink shadow-baby-sm ring-1 ring-baby-border">
-                하루특가
+              <div className="mb-1 flex items-center gap-1.5">
+                <DealCountdown deadline={dailyDeadline} />
+                <div className="inline-flex items-center rounded-md bg-baby-butter px-2 py-0.5 text-[10px] font-bold tracking-wide text-baby-ink shadow-baby-sm ring-1 ring-baby-border">
+                  하루특가
+                </div>
               </div>
               <h2 className="font-display text-lg font-bold text-baby-ink">
                 오늘의 아기용품 하루특가
@@ -480,10 +538,10 @@ export default function HomeClient() {
           <div className="mb-3 flex items-end justify-between">
             <div>
               <h2 className="font-display text-lg font-bold text-baby-ink">
-                아기용품 베스트
+                아기용품 인기 상품
               </h2>
               <p className="text-xs text-baby-mute">
-                출산·유아동 카테고리 인기 상품
+                제품별 인기 상품
               </p>
             </div>
           </div>
