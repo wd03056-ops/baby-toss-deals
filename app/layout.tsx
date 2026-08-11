@@ -11,8 +11,13 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#FFF0F5",
+  userScalable: false,
+  themeColor: "#FDFBF7",
+  colorScheme: "light",
 };
+
+/** 앱인토스: SSR 금지 — 레이아웃도 정적 생성 */
+export const dynamic = "force-static";
 
 export default function RootLayout({
   children,
@@ -20,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="h-full">
+    <html lang="ko" className="h-full light" style={{ colorScheme: "light" }}>
       <head>
         <meta charSet="utf-8" />
         {/* 구글 폰트 직접 로드 (한글: Noto Sans KR, 영문: Nunito, Fredoka) */}
@@ -31,7 +36,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body style={{ fontFamily: "'Noto Sans KR', 'Nunito', sans-serif" }} className="min-h-full antialiased">
+      <body
+        style={{ fontFamily: "'Noto Sans KR', 'Nunito', sans-serif" }}
+        className="min-h-full bg-[#FDFBF7] text-[#332E2B] antialiased"
+      >
         {children}
       </body>
     </html>
