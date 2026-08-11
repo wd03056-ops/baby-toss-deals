@@ -18,6 +18,9 @@ const BABY_PRODUCT_KEYWORDS = [
   "간식",
   "젖병",
   "물티슈",
+  "세제",
+  "로션",
+  "매트",
   "장난감",
   "완구",
   "유모차",
@@ -38,7 +41,7 @@ const PRODUCT_FETCH_SIZE = 100;
 const TODAY_DEALS_PAGE_SIZE = 30;
 /** 응답 메모리 캐시 1시간 (빈 배열은 캐시하지 않음) */
 const RESPONSE_CACHE_TTL_MS = 3600_000;
-const CACHE_VERSION = "v6-rate-limit";
+const CACHE_VERSION = "v6-keywords-extra";
 
 type TossProduct = {
   rank?: number;
