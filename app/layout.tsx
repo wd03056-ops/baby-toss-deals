@@ -1,26 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito, Fredoka, Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
-
-// 1. 라틴 폰트
-const nunito = Nunito({
-  variable: "--font-nunito",
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
-});
-
-const fredoka = Fredoka({
-  variable: "--font-fredoka",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
-// 2. 한글 폰트 추가 (Noto Sans KR)
-const notoSansKr = Noto_Sans_KR({
-  variable: "--font-noto-sans-kr",
-  subsets: ["latin"], // Next.js가 한글 글꼴도 자동 최적화해 줍니다.
-  weight: ["400", "500", "700"],
-});
 
 export const metadata: Metadata = {
   title: "아이특가 - 오늘의 추천 유아용품",
@@ -41,12 +20,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="ko"
-      className={`${nunito.variable} ${fredoka.variable} ${notoSansKr.variable} h-full`}
-    >
-      {/* font-sans 기본 글꼴에 notoSansKr이 먼저 적용되도록 지정 */}
-      <body className={`${notoSansKr.className} min-h-full antialiased`}>
+    <html lang="ko" className="h-full">
+      <head>
+        <meta charSet="utf-8" />
+        {/* 구글 폰트 직접 로드 (한글: Noto Sans KR, 영문: Nunito, Fredoka) */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=Nunito:wght@400;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body style={{ fontFamily: "'Noto Sans KR', 'Nunito', sans-serif" }} className="min-h-full antialiased">
         {children}
       </body>
     </html>
