@@ -98,13 +98,13 @@ export function ensureTossAdsInitialized(): Promise<boolean> {
             console.log("[TossAds] SDK 초기화 완료");
             resolve(true);
           },
-          onInitializationFailed: (error) => {
+          onInitializationFailed: (error: any) => {
             console.error("[TossAds] SDK 초기화 실패:", error);
             resolve(false);
           },
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("[TossAds] SDK 초기화 오류:", error);
       resolve(false);
     }
@@ -118,7 +118,7 @@ export function destroyAllTossBanners(): void {
   try {
     if (!isTossAdsMethodSupported(TossAds?.destroyAll)) return;
     TossAds.destroyAll();
-  } catch (error) {
+  } catch (error: any) {
     console.error("[TossAds] destroyAll 실패:", error);
   }
 }

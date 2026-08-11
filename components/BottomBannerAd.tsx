@@ -29,27 +29,27 @@ export default function BottomBannerAd() {
         tone: "blackAndWhite",
         variant: "expanded",
         callbacks: {
-          onAdRendered: (payload) => {
+          onAdRendered: (payload: any) => {
             console.log("[TossAds] 광고 렌더링 완료:", payload.slotId);
             setVisible(true);
           },
-          onAdImpression: (payload) => {
+          onAdImpression: (payload: any) => {
             console.log("[TossAds] 광고 노출됨:", payload.slotId);
           },
-          onAdViewable: (payload) => {
+          onAdViewable: (payload: any) => {
             console.log(
               "[TossAds] 광고 노출 기록됨 (수익 발생):",
               payload.slotId,
             );
           },
-          onAdClicked: (payload) => {
+          onAdClicked: (payload: any) => {
             console.log("[TossAds] 광고 클릭됨:", payload.slotId);
           },
-          onNoFill: (payload) => {
+          onNoFill: (payload: any) => {
             console.warn("[TossAds] 표시할 광고가 없습니다:", payload.slotId);
             setVisible(false);
           },
-          onAdFailedToRender: (payload) => {
+          onAdFailedToRender: (payload: any) => {
             console.error(
               "[TossAds] 광고 렌더링 실패:",
               payload.error?.message ?? payload.error,
