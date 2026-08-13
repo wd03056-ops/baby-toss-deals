@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import BottomBannerAd from "@/components/BottomBannerAd";
 import ProductDetailSheet from "@/components/ProductDetailSheet";
 import { ensureAnonymousUserKey } from "@/lib/apps-in-toss";
+import { apiUrl } from "@/lib/api-base";
 import type { Product } from "@/types/product";
 
 export type { Product };
@@ -188,14 +189,15 @@ async function loadFeedMemoized(
   const inflight = clientFeedInflight.get(key);
   if (inflight) return inflight;
 
-  const url =
+  const url = apiUrl(
     tab === "best"
       ? "/api/toss?type=best"
       : tab === "daily"
         ? "/api/toss?type=daily"
         : categoryId
           ? `/api/toss?type=category-best&categoryId=${categoryId}`
-          : "/api/toss?type=categories";
+          : "/api/toss?type=categories",
+  );
 
   const promise = fetchViaOurApi(url)
     .then((data) => {

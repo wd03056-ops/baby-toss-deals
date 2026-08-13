@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { openExternalUrl } from "@/lib/apps-in-toss";
+import { apiUrl } from "@/lib/api-base";
 import type { Product } from "@/types/product";
 
 export type ProductDetail = Product & {
@@ -97,7 +98,7 @@ async function loadDetailMemoized(tacaItemId: number): Promise<DetailApiResponse
   if (inflight) return inflight;
 
   const promise = (async () => {
-    const response = await fetch(`/api/toss/detail/${tacaItemId}`);
+    const response = await fetch(apiUrl(`/api/toss/detail/${tacaItemId}`));
     const data = (await readJsonSafe(response)) as DetailApiResponse | null;
     const normalized: DetailApiResponse = data ?? {
       success: false,
@@ -216,7 +217,7 @@ export default function ProductDetailSheet({ listProduct, onClose }: Props) {
 
     try {
       // productUrl 은 추적·수익 집계가 안 됨 → tacaItemId 로 쉐어링크만 발급
-      const response = await fetch("/api/toss/link", {
+      const response = await fetch(apiUrl("/api/toss/link"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tacaItemId }),

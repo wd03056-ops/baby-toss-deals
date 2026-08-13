@@ -3,14 +3,17 @@ import { defineConfig } from "@apps-in-toss/web-framework/config";
 /**
  * 앱인토스 비게임 미니앱 설정
  * @see https://developers-apps-in-toss.toss.im/checklist/app-nongame
+ * @see https://developers-apps-in-toss.toss.im/guide/operation/toss.md
  */
 export default defineConfig({
-  appName: "tossbaby",
+  appName: "babybaby",
   brand: {
     // 화면에 노출되는 앱 기본 색상
     primaryColor: "#D99B82",
   },
   permissions: [],
+  /** Next.js `output: "export"` 결과물 디렉터리 — ait build 가 여기의 index.html 을 패키징 */
+  webBundleDir: "out",
   navigationBar: {
     // 토스 비게임 내비게이션 바 사용 (자체 뒤로가기와 중복 금지)
     withBackButton: true,

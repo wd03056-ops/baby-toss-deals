@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/build-ait.mjs",
+    "build:web": "next build",
+    "build:ait": "ait build",
+    "deploy": "ait deploy",
     "start": "next start",
     "lint": "eslint"
   },

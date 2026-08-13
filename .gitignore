@@ -43,3 +43,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 앱인토스 제출 번들
+*.ait
+.ait-build-stash/
