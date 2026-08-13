@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { corsJson, corsPreflight } from "@/lib/cors";
 import {
   fetchProductDetailById,
   getAccessToken,
@@ -99,6 +100,10 @@ function normalizeDetail(detail: TossProductDetail) {
  */
 export const revalidate = 3600;
 
+export async function OPTIONS() {
+  return corsPreflight();
+}
+
 export async function GET(
   _request: NextRequest,
   context: { params: Promise<{ id: string }> | { id: string } },
@@ -107,7 +112,7 @@ export async function GET(
   const tacaItemId = Number(params.id);
 
   if (!Number.isFinite(tacaItemId) || tacaItemId <= 0) {
-    return NextResponse.json(
+    return corsJson(
       {
         success: false,
         fallbackRequired: true,
@@ -121,13 +126,13 @@ export async function GET(
 
   const fresh = getFresh(key);
   if (fresh) {
-    return NextResponse.json({ ...fresh, cached: true, stale: false });
+    return corsJson({ ...fresh, cached: true, stale: false });
   }
 
   const existing = inflightByKey.get(key);
   if (existing) {
     const body = await existing;
-    return NextResponse.json({ ...body, cached: true, stale: Boolean(body.stale) });
+    return corsJson({ ...body, cached: true, stale: Boolean(body.stale) });
   }
 
   const promise = (async (): Promise<Record<string, unknown>> => {
@@ -193,7 +198,7 @@ export async function GET(
   inflightByKey.set(key, promise);
   const body = await promise;
 
-  return NextResponse.json({
+  return corsJson({
     ...body,
     cached: Boolean(body.fallback) || Boolean(body.stale),
     stale: Boolean(body.stale),

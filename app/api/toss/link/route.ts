@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { corsJson, corsPreflight } from "@/lib/cors";
 import { createShareLink, TossApiError } from "@/lib/toss-api";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,10 @@ function extractErrorMessage(error: unknown): string {
   return "쉐어링크 발급 실패";
 }
 
+export async function OPTIONS() {
+  return corsPreflight();
+}
+
 /**
  * POST /api/toss/link
  * body: { tacaItemId: number } 또는 { productId: number }
@@ -49,7 +54,7 @@ export async function POST(request: NextRequest) {
     const tacaItemId = Number(rawId);
 
     if (!rawId || !Number.isFinite(tacaItemId) || tacaItemId <= 0) {
-      return NextResponse.json(
+      return corsJson(
         {
           success: false,
           error: "유효한 tacaItemId가 필요합니다.",
@@ -60,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     const link = await createShareLink(tacaItemId);
 
-    return NextResponse.json({
+    return corsJson({
       success: true,
       tacaItemId: link.tacaItemId,
       productId: link.tacaItemId,
@@ -81,11 +86,10 @@ export async function POST(request: NextRequest) {
             : 502
         : 500;
 
-    return NextResponse.json(
+    return corsJson(
       {
         success: false,
         error: message,
-        // productUrl 폴백 안내 없음 — 추적 불가 링크는 내려주지 않음
       },
       { status },
     );

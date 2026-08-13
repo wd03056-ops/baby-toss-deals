@@ -155,27 +155,49 @@ async function readJsonSafe(response: Response): Promise<unknown> {
 }
 
 async function fetchViaOurApi(url: string): Promise<ApiResponse> {
-  const response = await fetch(url);
-  const data = (await readJsonSafe(response)) as ApiResponse | null;
+  console.info("[fetchViaOurApi] request", { url });
+  try {
+    const response = await fetch(url);
+    const data = (await readJsonSafe(response)) as ApiResponse | null;
 
-  if (response.ok && data && data.success !== false) {
-    return {
-      ...data,
-      products: Array.isArray(data.products) ? data.products : [],
-      categories: Array.isArray(data.categories) ? data.categories : [],
-    };
+    console.info("[fetchViaOurApi] response", {
+      url,
+      status: response.status,
+      ok: response.ok,
+      success: data?.success,
+      productCount: Array.isArray(data?.products) ? data.products.length : 0,
+      categoryCount: Array.isArray(data?.categories) ? data.categories.length : 0,
+      error: data?.error ?? null,
+    });
+
+    if (response.ok && data && data.success !== false) {
+      return {
+        ...data,
+        products: Array.isArray(data.products) ? data.products : [],
+        categories: Array.isArray(data.categories) ? data.categories : [],
+      };
+    }
+
+    if (data?.products || data?.categories || data?.fallback || data?.stale) {
+      return {
+        ...data,
+        success: true,
+        products: Array.isArray(data.products) ? data.products : [],
+        categories: Array.isArray(data.categories) ? data.categories : [],
+      };
+    }
+
+    throw new Error(getApiErrorMessage(data, "상품을 불러오지 못했습니다."));
+  } catch (error) {
+    console.error("[fetchViaOurApi] failed", {
+      url,
+      message: error instanceof Error ? error.message : String(error),
+      name: error instanceof Error ? error.name : typeof error,
+      stack: error instanceof Error ? error.stack : undefined,
+      cause: error instanceof Error ? (error as Error & { cause?: unknown }).cause : undefined,
+    });
+    throw error;
   }
-
-  if (data?.products || data?.categories || data?.fallback || data?.stale) {
-    return {
-      ...data,
-      success: true,
-      products: Array.isArray(data.products) ? data.products : [],
-      categories: Array.isArray(data.categories) ? data.categories : [],
-    };
-  }
-
-  throw new Error(getApiErrorMessage(data, "상품을 불러오지 못했습니다."));
 }
 
 async function loadFeedMemoized(
@@ -189,20 +211,29 @@ async function loadFeedMemoized(
   const inflight = clientFeedInflight.get(key);
   if (inflight) return inflight;
 
-  const url = apiUrl(
+  const path =
     tab === "best"
       ? "/api/toss?type=best"
       : tab === "daily"
         ? "/api/toss?type=daily"
         : categoryId
           ? `/api/toss?type=category-best&categoryId=${categoryId}`
-          : "/api/toss?type=categories",
-  );
+          : "/api/toss?type=categories";
+  const url = apiUrl(path);
 
   const promise = fetchViaOurApi(url)
     .then((data) => {
       clientFeedMemo.set(key, data);
       return data;
+    })
+    .catch((error) => {
+      console.error("[loadFeedMemoized] failed", {
+        tab,
+        categoryId,
+        url,
+        message: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
     })
     .finally(() => {
       clientFeedInflight.delete(key);
@@ -1005,11 +1036,15 @@ export default function HomeClient() {
         const products = sanitizeProducts(dailyResult.value.products);
         console.log("[feed] daily 전체 상품 개수(API):", products.length);
         setDailyItems(products);
+      } else {
+        console.error("[bootstrap] daily failed", dailyResult.reason);
       }
       if (bestResult.status === "fulfilled") {
         const products = sanitizeProducts(bestResult.value.products);
         console.log("[feed] best 전체 상품 개수(API):", products.length);
         setBestItems(products);
+      } else {
+        console.error("[bootstrap] best failed", bestResult.reason);
       }
       if (catResult.status === "fulfilled") {
         const all = catResult.value.categories ?? [];
@@ -1021,6 +1056,8 @@ export default function HomeClient() {
         setCategories(sorted);
         // 카테고리 탭 진입 시 가구/홈데코부터 바로 상품 노출
         setSelectedCategoryId((prev) => prev ?? pickDefaultCategoryId(sorted));
+      } else {
+        console.error("[bootstrap] categories failed", catResult.reason);
       }
 
       const failed =
@@ -1028,6 +1065,12 @@ export default function HomeClient() {
         bestResult.status === "rejected" &&
         catResult.status === "rejected";
       if (failed) {
+        console.error("[bootstrap] all feeds failed", {
+          daily: dailyResult.status === "rejected" ? String(dailyResult.reason) : "ok",
+          best: bestResult.status === "rejected" ? String(bestResult.reason) : "ok",
+          categories: catResult.status === "rejected" ? String(catResult.reason) : "ok",
+          apiBase: process.env.NEXT_PUBLIC_API_BASE_URL ?? "(same-origin)",
+        });
         setError("상품을 불러오지 못했습니다. 잠시 후 다시 확인해 주세요.");
       }
 
@@ -1098,7 +1141,11 @@ export default function HomeClient() {
         );
         setCategoryItems(products);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("[category] load failed", {
+          selectedCategoryId,
+          message: error instanceof Error ? error.message : String(error),
+        });
         if (cancelled) return;
         setCategoryItems([]);
       })

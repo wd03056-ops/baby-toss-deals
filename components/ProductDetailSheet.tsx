@@ -98,15 +98,36 @@ async function loadDetailMemoized(tacaItemId: number): Promise<DetailApiResponse
   if (inflight) return inflight;
 
   const promise = (async () => {
-    const response = await fetch(apiUrl(`/api/toss/detail/${tacaItemId}`));
-    const data = (await readJsonSafe(response)) as DetailApiResponse | null;
-    const normalized: DetailApiResponse = data ?? {
-      success: false,
-      fallbackRequired: true,
-    };
-    // 성공·notFound·fallbackRequired 모두 메모 (빈/실패도 재호출 폭주 방지)
-    clientDetailMemo.set(tacaItemId, normalized);
-    return normalized;
+    const url = apiUrl(`/api/toss/detail/${tacaItemId}`);
+    try {
+      console.info("[loadDetailMemoized] request", { tacaItemId, url });
+      const response = await fetch(url);
+      const data = (await readJsonSafe(response)) as DetailApiResponse | null;
+      console.info("[loadDetailMemoized] response", {
+        tacaItemId,
+        url,
+        status: response.status,
+        ok: response.ok,
+        success: data?.success,
+        error: data?.error ?? null,
+      });
+      const normalized: DetailApiResponse = data ?? {
+        success: false,
+        fallbackRequired: true,
+      };
+      // 성공·notFound·fallbackRequired 모두 메모 (빈/실패도 재호출 폭주 방지)
+      clientDetailMemo.set(tacaItemId, normalized);
+      return normalized;
+    } catch (error) {
+      console.error("[loadDetailMemoized] failed", {
+        tacaItemId,
+        url,
+        message: error instanceof Error ? error.message : String(error),
+        name: error instanceof Error ? error.name : typeof error,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
+    }
   })().finally(() => {
     clientDetailInflight.delete(tacaItemId);
   });
@@ -170,7 +191,11 @@ export default function ProductDetailSheet({ listProduct, onClose }: Props) {
           setUsingFallback(true);
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("[ProductDetailSheet] detail load failed", {
+          tacaItemId: listProduct.tacaItemId,
+          message: error instanceof Error ? error.message : String(error),
+        });
         if (cancelled) return;
         setProduct(mergeDetail(listProduct));
         setUsingFallback(true);
@@ -241,6 +266,11 @@ export default function ProductDetailSheet({ listProduct, onClose }: Props) {
       }
       await openExternalUrl(shareUrl);
     } catch (error) {
+      console.error("[ProductDetailSheet] share link failed", {
+        tacaItemId,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       try {
         newWindow?.close();
       } catch {

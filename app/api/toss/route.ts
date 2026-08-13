@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { corsJson, corsPreflight } from "@/lib/cors";
 import {
   fetchBestSelling,
   fetchCategories,
@@ -601,7 +602,7 @@ function errorResponse(error: unknown) {
         : error.status >= 400 && error.status < 600
           ? error.status
           : 502;
-    return NextResponse.json(
+    return corsJson(
       {
         success: false,
         stage: error.stage,
@@ -618,7 +619,7 @@ function errorResponse(error: unknown) {
   }
 
   console.error("[/api/toss]", error);
-  return NextResponse.json(
+  return corsJson(
     {
       success: false,
       error: error instanceof Error ? error.message : "API 호출 실패",
@@ -643,6 +644,10 @@ export const revalidate = 3600;
  * @see https://sharelink-docs.toss.im/guide/open-api/api/categories
  * @see https://sharelink-docs.toss.im/guide/open-api/api/products
  */
+export async function OPTIONS() {
+  return corsPreflight();
+}
+
 export async function GET(request: NextRequest) {
   const type = parseFeedType(request.nextUrl.searchParams.get("type"));
   const categoryIdRaw = request.nextUrl.searchParams.get("categoryId");
@@ -656,7 +661,7 @@ export async function GET(request: NextRequest) {
       categoryId,
     );
 
-    return NextResponse.json({
+    return corsJson({
       ...body,
       cached,
       stale,
