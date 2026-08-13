@@ -417,7 +417,8 @@ export default function ProductDetailSheet({ listProduct, onClose }: Props) {
                 : "구매하러 가기"}
           </button>
           <p className="mt-2 text-center text-[11px] leading-relaxed text-[#8b95a1]">
-            토스 쉐어링크(추적 링크)로 이동합니다
+            이 서비스는 토스쇼핑 제휴 활동의 일환으로, 구매 시 일정액의 수수료를
+            제공받을 수 있습니다.
           </p>
         </div>
       </div>
