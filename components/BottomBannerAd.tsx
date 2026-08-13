@@ -9,7 +9,7 @@ import {
 
 /**
  * 웹뷰 하단 고정형 배너 광고 (리스트형).
- * API 레퍼런스 옵션·콜백·destroy / destroyAll 전부 연결.
+ * 하단 네비게이션 위에 배치됩니다.
  * @see https://developers-apps-in-toss.toss.im/documentation/common/monetization/iaa/web-banner
  */
 export default function BottomBannerAd() {
@@ -24,7 +24,6 @@ export default function BottomBannerAd() {
       getBannerAdGroupId(),
       containerRef.current,
       {
-        // 문서 예제 프리셋
         theme: "auto",
         tone: "blackAndWhite",
         variant: "expanded",
@@ -66,7 +65,6 @@ export default function BottomBannerAd() {
     };
   }, [isInitialized, attachBanner]);
 
-  // 페이지/컴포넌트 언마운트 시 모든 배너 슬롯 제거
   useEffect(() => {
     return () => {
       destroyAllTossBanners();
@@ -77,21 +75,21 @@ export default function BottomBannerAd() {
 
   return (
     <>
-      {/* 고정 배너 높이만큼 본문 하단 여백 (노출 시에만) */}
       <div
         aria-hidden
         className="shrink-0 transition-[height] duration-200"
         style={{ height: visible ? 96 : 0 }}
       />
+      {/* 하단 네비(--bottom-nav-h) 바로 위에 고정 */}
       <div
-        className="fixed inset-x-0 bottom-0 z-40"
+        className="fixed inset-x-0 z-40"
         style={{
+          bottom: "var(--bottom-nav-h, 64px)",
           opacity: visible ? 1 : 0,
           pointerEvents: visible ? "auto" : "none",
         }}
         aria-hidden={!visible}
       >
-        {/* 고정형: width 100% + height 96px — 내부는 비워 둠 */}
         <div ref={containerRef} style={{ width: "100%", height: 96 }} />
       </div>
     </>

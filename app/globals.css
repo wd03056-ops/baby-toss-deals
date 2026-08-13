@@ -1,36 +1,55 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
 
 :root {
-  --background: #fff7fa;
-  --foreground: #334155;
-  --mint: #b8f0e0;
-  --peach: #ffd6c9;
+  --background: #f2f4f6;
+  --foreground: #191f28;
+  --muted: #6b7684;
+  --card: #ffffff;
+  --border: #e5e8eb;
+  --toss-blue: #3182f6;
+  --toss-red: #f04452;
+  --slate-deep: #191f28;
+  /* 하단 네비 높이 + safe-area */
+  --bottom-nav-h: calc(56px + env(safe-area-inset-bottom, 0px));
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-nunito), "Apple SD Gothic Neo", "Malgun Gothic",
-    sans-serif;
-  --font-display: var(--font-fredoka), var(--font-nunito), sans-serif;
+  --color-toss-blue: #3182f6;
+  --color-toss-red: #f04452;
+  --color-toss-bg: #f2f4f6;
+  --color-toss-card: #ffffff;
+  --color-toss-border: #e5e8eb;
+  --color-toss-ink: #191f28;
+  --color-toss-mute: #6b7684;
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR",
+    "Malgun Gothic", sans-serif;
+  --font-display: "Pretendard", sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: "Pretendard", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .font-display {
-  font-family: var(--font-display);
+  font-family: "Pretendard", sans-serif;
 }
 
-.bg-mint-blob {
-  background: var(--mint);
+/* 토스형 카드 — 보더리스에 가까운 소프트 섀도우 */
+.toss-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.bg-peach-blob {
-  background: var(--peach);
+.bg-toss-atmosphere {
+  background: linear-gradient(180deg, #ffffff 0%, #f2f4f6 28%, #f2f4f6 100%);
 }
 
 .scrollbar-hide {
@@ -42,8 +61,58 @@ body {
   display: none;
 }
 
-/* 하루특가 가로 캐러셀 */
-.daily-carousel {
+/* 카테고리/큐레이션 칩 가로 스크롤 — 부모 overflow-x-hidden 안에서도 동작 */
+.h-scroll-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+.h-scroll-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.h-scroll-chips.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.h-scroll-chip {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 8px rgba(25, 31, 40, 0.08);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.h-scroll-chip:active {
+  box-shadow: 0 1px 3px rgba(25, 31, 40, 0.1);
+}
+
+.h-scroll-chip.is-active {
+  box-shadow: 0 4px 14px rgba(49, 130, 246, 0.35);
+}
+
+/* 하루특가 빅카드 가로 스와이프 */
+.deal-carousel {
   display: flex;
   gap: 0.75rem;
   overflow-x: auto;
@@ -54,28 +123,50 @@ body {
   touch-action: pan-x;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding-bottom: 0.5rem;
+  padding: 0 1rem 0.25rem;
 }
 
-.daily-carousel::-webkit-scrollbar {
+.deal-carousel::-webkit-scrollbar {
   display: none;
-  width: 0;
-  height: 0;
 }
 
-.daily-carousel-item {
+.deal-carousel-item {
   flex: 0 0 auto;
-  width: min(42vw, 156px);
+  width: min(78vw, 300px);
   scroll-snap-align: start;
+}
+
+.deal-carousel-item:first-child {
+  margin-left: 0;
 }
 
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #e8eaed 0%,
+    #f5f6f8 45%,
+    #e8eaed 90%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
 }

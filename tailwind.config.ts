@@ -1,8 +1,7 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Warm & Neutral (감성 베이지) — baby 컬러 팔레트
- * Tailwind v4는 globals.css @theme도 함께 사용합니다.
+ * Premium Soft Slate — 눈이 편안한 오프화이트 + 샴페인 골드 포인트
  */
 const config: Config = {
   content: [
@@ -13,22 +12,23 @@ const config: Config = {
     extend: {
       colors: {
         baby: {
-          bg: "#FDFBF7",
+          bg: "#F8F9FB",
           card: "#FFFFFF",
-          border: "#E8E2D9",
-          butter: "#F4E0A5",
-          cta: "#D99B82",
-          ink: "#332E2B",
-          mute: "#7A726A",
+          border: "#E2E8F0",
+          butter: "#C5A059",
+          cta: "#1E293B",
+          gold: "#C5A059",
+          bronze: "#B8860B",
+          ink: "#0F172A",
+          mute: "#475569",
         },
       },
       boxShadow: {
         "baby-sm":
-          "0 1px 2px rgba(51, 46, 43, 0.04), 0 4px 12px rgba(51, 46, 43, 0.06)",
-        "baby":
-          "0 2px 4px rgba(51, 46, 43, 0.04), 0 8px 20px rgba(51, 46, 43, 0.08)",
+          "0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06)",
+        baby: "0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04)",
         "baby-md":
-          "0 4px 8px rgba(51, 46, 43, 0.05), 0 12px 28px rgba(51, 46, 43, 0.1)",
+          "0 4px 8px rgba(15, 23, 42, 0.05), 0 12px 24px rgba(15, 23, 42, 0.06)",
       },
     },
   },

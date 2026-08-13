@@ -3,11 +3,40 @@ import { createShareLink, TossApiError } from "@/lib/toss-api";
 
 export const dynamic = "force-dynamic";
 
+function extractErrorMessage(error: unknown): string {
+  if (error instanceof TossApiError) {
+    const body = error.body;
+    if (body && typeof body === "object") {
+      const obj = body as {
+        error?: string | { reason?: string; errorCode?: string; message?: string };
+        reason?: string;
+        message?: string;
+      };
+      if (typeof obj.error === "string" && obj.error.trim()) return obj.error;
+      if (obj.error && typeof obj.error === "object") {
+        return (
+          obj.error.reason ||
+          obj.error.message ||
+          obj.error.errorCode ||
+          error.message
+        );
+      }
+      if (typeof obj.reason === "string") return obj.reason;
+      if (typeof obj.message === "string") return obj.message;
+    }
+    return error.message;
+  }
+  if (error instanceof Error) return error.message;
+  return "쉐어링크 발급 실패";
+}
+
 /**
  * POST /api/toss/link
- * body: { productId: number } 또는 { tacaItemId: number }
+ * body: { tacaItemId: number } 또는 { productId: number }
  *
- * 토스 Open API POST /openapi/links 로 쉐어링크를 실시간 발급합니다.
+ * 토스 Open API POST /openapi/links 로 추적 가능한 쉐어링크를 발급합니다.
+ * 목록 API의 productUrl 은 수익 집계가 안 되므로 이 엔드포인트 결과만 사용하세요.
+ * @see https://sharelink-docs.toss.im/guide/open-api/api/link.md
  */
 export async function POST(request: NextRequest) {
   try {
@@ -16,45 +45,49 @@ export async function POST(request: NextRequest) {
       tacaItemId?: number | string;
     };
 
-    const rawId = body.productId ?? body.tacaItemId;
-    const productId = Number(rawId);
+    const rawId = body.tacaItemId ?? body.productId;
+    const tacaItemId = Number(rawId);
 
-    if (!rawId || Number.isNaN(productId) || productId <= 0) {
+    if (!rawId || !Number.isFinite(tacaItemId) || tacaItemId <= 0) {
       return NextResponse.json(
         {
           success: false,
-          error: "유효한 productId(또는 tacaItemId)가 필요합니다.",
+          error: "유효한 tacaItemId가 필요합니다.",
         },
         { status: 400 },
       );
     }
 
-    const link = await createShareLink(productId);
+    const link = await createShareLink(tacaItemId);
 
     return NextResponse.json({
       success: true,
+      tacaItemId: link.tacaItemId,
       productId: link.tacaItemId,
+      /** shortUrl 우선 — 추적·수익 집계용 */
       shareUrl: link.shareUrl,
       shortUrl: link.shortUrl,
       originUrl: link.originUrl,
     });
   } catch (error) {
     console.error("[/api/toss/link]", error);
-
-    if (error instanceof TossApiError) {
-      return NextResponse.json(error.body, { status: error.status });
-    }
-
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
-    }
+    const message = extractErrorMessage(error);
+    const status =
+      error instanceof TossApiError
+        ? error.status === 429
+          ? 429
+          : error.status >= 400 && error.status < 600
+            ? error.status
+            : 502
+        : 500;
 
     return NextResponse.json(
-      { success: false, error: "쉐어링크 발급 실패" },
-      { status: 500 },
+      {
+        success: false,
+        error: message,
+        // productUrl 폴백 안내 없음 — 추적 불가 링크는 내려주지 않음
+      },
+      { status },
     );
   }
 }
