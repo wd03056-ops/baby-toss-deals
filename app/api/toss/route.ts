@@ -602,16 +602,31 @@ function errorResponse(error: unknown) {
         : error.status >= 400 && error.status < 600
           ? error.status
           : 502;
+    const body =
+      error.body && typeof error.body === "object"
+        ? (error.body as Record<string, unknown>)
+        : null;
     return corsJson(
       {
         success: false,
         stage: error.stage,
         error:
-          typeof error.body === "object" &&
-          error.body &&
-          "error" in (error.body as object)
-            ? (error.body as { error?: unknown }).error
+          body && "error" in body
+            ? body.error
             : error.message,
+        errorCode:
+          body && typeof body.errorCode === "string"
+            ? body.errorCode
+            : body?.error &&
+                typeof body.error === "object" &&
+                body.error &&
+                "errorCode" in (body.error as object)
+              ? (body.error as { errorCode?: string }).errorCode
+              : undefined,
+        reason:
+          typeof body?.reason === "string" ? body.reason : error.message,
+        hint: typeof body?.hint === "string" ? body.hint : undefined,
+        checklist: Array.isArray(body?.checklist) ? body.checklist : undefined,
         detail: error.body,
       },
       { status },

@@ -383,15 +383,46 @@ export async function tossFetch<T>(
 
   if (data && typeof data === "object" && "resultType" in data) {
     if (data.resultType === "FAIL") {
+      const errorCode = data.error?.errorCode;
+      const isAccessDenied = errorCode === "SHARELINK_OPENAPI_ACCESS_DENIED";
+      /**
+       * ACCESS_DENIED 공식 원인 (sharelink-docs):
+       * - 등록된 출발지 IP가 없거나
+       * - 등록되지 않은 IP에서 호출
+       * Vercel Serverless 는 기본 고정 egress IP가 없으므로
+       * 어드민에 Vercel 출발지 IP/대역을 등록해야 합니다.
+       */
+      const hint = isAccessDenied
+        ? "SHARELINK_OPENAPI_ACCESS_DENIED: 인증키 문제보다 '출발지 IP 미등록' 가능성이 큽니다. sharelink.toss.im 어드민 → API 연동에 Vercel(서버) 출발지 IP를 등록하세요. 로컬 PC IP가 아닙니다. 키는 Vercel Environment Variables의 TOSS_ACCESS_KEY / TOSS_SECRET_KEY 인지 확인하세요."
+        : undefined;
+
       console.error("[toss-api] openapi resultType=FAIL", {
         path,
         error: data.error,
-        hint:
-          data.error?.errorCode === "SHARELINK_OPENAPI_ACCESS_DENIED"
-            ? "인증 정보 또는 등록되지 않은 출발지 IP입니다. sharelink.toss.im 어드민에서 서버 IP를 등록하세요."
-            : undefined,
+        authorization: "Bearer <access_token>",
+        hint,
       });
-      throw new TossApiError(200, data, "openapi", data.error?.reason ?? "FAIL");
+
+      throw new TossApiError(
+        isAccessDenied ? 403 : 200,
+        {
+          resultType: "FAIL",
+          error: data.error,
+          errorCode,
+          reason: data.error?.reason,
+          hint,
+          checklist: isAccessDenied
+            ? [
+                "Vercel Project → Settings → Environment Variables 에 TOSS_ACCESS_KEY, TOSS_SECRET_KEY, TOSS_PUBLISHER_ID 등록",
+                "배포 환경(Production)에 값이 있는지 확인 후 Redeploy",
+                "sharelink.toss.im 어드민에 Vercel API 서버 출발지 IP 등록 (최대 10개, IPv4 또는 /16~/32 대역)",
+                "등록 IP = API를 호출하는 서버 IP (개발 PC IP 아님)",
+              ]
+            : undefined,
+        },
+        "openapi",
+        data.error?.reason ?? "FAIL",
+      );
     }
     return data.success;
   }
